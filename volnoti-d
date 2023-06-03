@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# Volume change sound.
+declare -r VOLUME_CHANGE_SOUND='/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga'
+
+# Configuration to decide to play sound or not
+declare -r PLAY_SOUND=true
+
+
+is_muted() {
+    return `pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'`
+}
+
+show_notification(){
+    volume=`pactl get-sink-volume @DEFAULT_SINK@ | awk -W posix '/^Volume: / {gsub("%,?", ""); print $5; exit}'`
+    if is_muted
+    then
+        volnoti-show -m ${volume}
+    else
+        volnoti-show ${volume}
+        
+        if $PLAY_SOUND
+        then
+            paplay -d  @DEFAULT_SINK@ "${VOLUME_CHANGE_SOUND}" &
+        fi
+    fi
+}
+
+get_default_sink_index(){
+    pactl list sinks | awk -W posix '/^Sink #/{gsub("#", ""); idx = $2}
+        /^[ \t]+Name: / {insink = $2 == "'"$(pactl get-default-sink)"'"; if (insink) { print idx }; exit}'
+}
+
+while IFS= read -r line; do
+    sink=`echo "${line}" | awk -F# '{print $2}'`
+    if [ "${sink}" == "$(get_default_sink_index)" ]
+    then
+        show_notification
+    fi
+done < <(pactl subscribe | stdbuf -oL grep "Event 'change' on sink #")
+

@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+# Volume change step
+declare -ir VOLUME_STEP_SIZE=5
+
+# Maximum Volume Level Permitted
+declare -ir UPPER_THRESHOLD=100
+
+# Exit Codes
+declare -ir ERR_USAGE=64
+
+has_color() {
+    (( $(tput colors 2>/dev/null || echo 0) >= 8 )) && [ -t 1 ]
+}
+
+setup_color() {
+    if has_color; then
+        COLOR_RESET=$'\033[0m'
+        COLOR_RED=$'\033[0;31m'
+        COLOR_GREEN=$'\033[0;32m'
+        COLOR_YELLOW=$'\033[0;33m'
+        COLOR_MAGENTA=$'\033[0;35m'
+        COLOR_CYAN=$'\033[0;36m'
+    fi
+}
+
+usage(){
+    cat <<- EOF 1>&2
+${COLOR_YELLOW}Usage:${COLOR_RESET} $0  <command>
+Controls volume
+
+${COLOR_YELLOW}Commands:${COLOR_RESET}
+    ${COLOR_GREEN}up${COLOR_RESET}                  increase volume
+    ${COLOR_GREEN}down${COLOR_RESET}                decrease volume
+    ${COLOR_GREEN}mute${COLOR_RESET}                toggle mute
+EOF
+    exit $ERR_USAGE
+}
+
+setup_color
+
+volume=`pactl get-sink-volume @DEFAULT_SINK@ | awk -W posix '/^Volume: / {gsub("%,?", ""); print $5; exit}'`
+
+operation="$1"
+case "$operation" in
+
+    up | down)
+        if [ "$operation" == "up" ]
+        then
+            let volume+=VOLUME_STEP_SIZE
+        else
+            let volume-=VOLUME_STEP_SIZE
+        fi
+        if [ $volume -gt $UPPER_THRESHOLD ]
+        then
+            volume=$UPPER_THRESHOLD
+        fi
+        
+        pactl set-sink-volume @DEFAULT_SINK@ ${volume}%
+        ;;
+
+    mute)
+        pactl set-sink-mute @DEFAULT_SINK@ toggle
+        ;;
+
+    *)
+        usage
+        ;;
+
+esac
+
