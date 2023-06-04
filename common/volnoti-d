@@ -11,25 +11,20 @@ declare -r \
     RED=$'\033[0;31m' \
     BOLD="\e[01m"
 
+declare prev_volume # notify only on volume change 
+declare card_change=false # don't play sound on card_change
+
 is_muted() {
     return `pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'`
 }
 
-play_volume_changed(){
-    $PLAY_SOUND || return
-    # this won't work, it will generate another `change` event, hence infinite loop
-    # paplay -d  @DEFAULT_SINK@ "${VOLUME_CHANGE_SOUND}" & 
+get_volume(){
+    echo `pactl get-sink-volume @DEFAULT_SINK@ | awk -W posix '/^Volume: / {gsub("%,?", ""); print $5; exit}'`
 }
 
-show_notification(){
-    volume=`pactl get-sink-volume @DEFAULT_SINK@ | awk -W posix '/^Volume: / {gsub("%,?", ""); print $5; exit}'`
-    if is_muted
-    then
-        volnoti-show -m ${volume}
-    else
-        volnoti-show ${volume}
-        play_volume_changed
-    fi
+play_volume_changed(){
+    $PLAY_SOUND || return
+    paplay -d  @DEFAULT_SINK@ "${VOLUME_CHANGE_SOUND}" & 
 }
 
 get_default_sink_index(){
@@ -56,11 +51,42 @@ then
     volnoti
 fi
 
+prev_volume=$(get_volume)
+
 while IFS= read -r line; do
+    if echo "${line}" | grep -q card
+    then
+        card_change=true
+        continue
+    fi
     sink=`echo "${line}" | awk -F# '{print $2}'`
+    current_volume=$(get_volume)
+    if [ "$current_volume" == "$prev_volume" ] && [ "$card_change" != true ]
+    then
+        continue
+    fi
+    # show notifcation on volume change || card change, but play sound only on volume change
     if [ "${sink}" == "$(get_default_sink_index)" ]
     then
-        show_notification
+        prev_volume=$current_volume
+
+        display_volume=$current_volume
+        if((display_volume>100))
+        then
+            display_volume=100
+        fi
+        if is_muted
+        then
+            volnoti-show -m ${display_volume}
+        else
+            volnoti-show ${display_volume}
+            if [ "$card_change" != true ]
+            then
+                play_volume_changed
+            fi
+        fi
+        card_change=false
     fi
-done < <(pactl subscribe | stdbuf -oL grep "Event 'change' on sink #")
+    
+done < <(pactl subscribe | stdbuf -oL grep -e "Event 'change' on sink #" -e "Event 'change' on card #")
 
