@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+
+SKEL="@SKELDIR@/config.skel"
+CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/volctl/config"
+
+declare -ir \
+    DEFAULT_VOLUME_STEP_SIZE=5 \
+    DEFAULT_UPPER_THRESHOLD=100
+
+declare -ir \
+    ERR_USAGE=64
+
+VOLUME_STEP_SIZE=""
+UPPER_THRESHOLD=""
+
+has_color() {
+    (( $(tput colors 2>/dev/null || echo 0) >= 8 )) && [ -t 1 ]
+}
+
+setup_color() {
+    if has_color; then
+        RESET=$'\033[0m'
+        RED=$'\033[0;31m'
+        GREEN=$'\033[0;32m'
+        YELLOW=$'\033[0;33m'
+        MAGENTA=$'\033[0;35m'
+        CYAN=$'\033[0;36m'
+        BOLD="\e[01m"
+    fi
+}
+
+usage(){
+    cat <<- EOF 1>&2
+${YELLOW}Usage:${RESET} $0  <command>
+Controls volume
+
+${YELLOW}Commands:${RESET}
+    ${GREEN}up${RESET}                  increase volume
+    ${GREEN}down${RESET}                decrease volume
+    ${GREEN}mute${RESET}                toggle mute
+EOF
+    exit $ERR_USAGE
+}
+
+is_int(){
+    [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+make_config(){
+    if [[ ! -f "${SKEL}" ]]; then
+        echo -e "${RED}${SKEL} is missing. Reinstall this package to continue."${RESET}
+        exit 1
+    fi
+
+    # not really required, since this function will only be called 
+    # when the configuration file is missing
+    if [[ ! -f "$CONFIG" ]]; then 
+        echo -e ${BOLD}'------------------------------------------------------------'${RESET}
+        echo -e ${BOLD}' No config file found so creating a fresh one in:'${RESET}
+        echo -e ${BOLD}${CYAN}" $CONFIG"${RESET} 
+        echo
+
+        install -Dm644 "$SKEL" "$CONFIG"
+
+        echo -e ${BOLD}" Edit this file if desired."${RESET}
+        echo -e ${BOLD}'------------------------------------------------------------'${RESET}
+    fi
+}
+
+load_config(){
+    if [[ ! -f "${CONFIG}" ]]; then
+        make_config
+    fi
+
+    source "${CONFIG}"
+    is_int "$VOLUME_STEP_SIZE" || VOLUME_STEP_SIZE="${DEFAULT_VOLUME_STEP_SIZE}"
+    is_int "$UPPER_THRESHOLD" || UPPER_THRESHOLD="${DEFAULT_UPPER_THRESHOLD}"
+}
+
+setup_color
+
+load_config
+
+volume=`pactl get-sink-volume @DEFAULT_SINK@ | awk -W posix '/^Volume: / {gsub("%,?", ""); print $5; exit}'`
+
+operation="$1"
+case "$operation" in
+
+    up | down)
+        if [ "$operation" == "up" ]
+        then
+            let volume+=VOLUME_STEP_SIZE
+        else
+            let volume-=VOLUME_STEP_SIZE
+        fi
+        if ((volume>UPPER_THRESHOLD))
+        then
+            volume=$UPPER_THRESHOLD
+        fi
+        
+        pactl set-sink-volume @DEFAULT_SINK@ ${volume}%
+        ;;
+
+    mute)
+        pactl set-sink-mute @DEFAULT_SINK@ toggle
+        ;;
+
+    *)
+        usage
+        ;;
+
+esac
+

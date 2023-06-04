@@ -1,14 +1,24 @@
 #!/usr/bin/env bash
 
 # Volume change sound.
-declare -r VOLUME_CHANGE_SOUND='/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga'
+declare -r VOLUME_CHANGE_SOUND=${VOLUME_CHANGE_SOUND:-/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga}
 
 # Configuration to decide to play sound or not
 declare -r PLAY_SOUND=true
 
+declare -r \
+    RESET=$'\033[0m' \
+    RED=$'\033[0;31m' \
+    BOLD="\e[01m"
 
 is_muted() {
     return `pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'`
+}
+
+play_volume_changed(){
+    $PLAY_SOUND || return
+    # this won't work, it will generate another `change` event, hence infinite loop
+    # paplay -d  @DEFAULT_SINK@ "${VOLUME_CHANGE_SOUND}" & 
 }
 
 show_notification(){
@@ -18,11 +28,7 @@ show_notification(){
         volnoti-show -m ${volume}
     else
         volnoti-show ${volume}
-        
-        if $PLAY_SOUND
-        then
-            paplay -d  @DEFAULT_SINK@ "${VOLUME_CHANGE_SOUND}" &
-        fi
+        play_volume_changed
     fi
 }
 
@@ -30,6 +36,25 @@ get_default_sink_index(){
     pactl list sinks | awk -W posix '/^Sink #/{gsub("#", ""); idx = $2}
         /^[ \t]+Name: / {insink = $2 == "'"$(pactl get-default-sink)"'"; if (insink) { print idx }; exit}'
 }
+
+check_volnoti_command(){
+    cmd="$1"
+
+    command -v "${cmd}" >/dev/null 2>&1 || {
+        echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} command ${BOLD}${cmd}${RESET} is missing." >&2
+        echo -e "Install ${BOLD}volnoti${RESET} package, that provides it. Aborting." >&2
+        exit 1; 
+    }
+}
+
+check_volnoti_command volnoti-show
+check_volnoti_command volnoti
+
+# Start volnoti if not already running
+if [ ! `pgrep -n -x volnoti` ]
+then
+    volnoti
+fi
 
 while IFS= read -r line; do
     sink=`echo "${line}" | awk -F# '{print $2}'`

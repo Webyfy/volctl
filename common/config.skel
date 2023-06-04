@@ -1,0 +1,16 @@
+#
+# $HOME/.config/volctl/config
+#
+
+# The default setting is for volctl to NOT increase to volume level
+# above 100 % but Some users may wish exceed this level. If this describes
+# your use case, uncomment the UPPER_THRESHOLD variable below setting it to
+# the new upper threshold.
+# 
+#UPPER_THRESHOLD=150
+
+# increase/decrease volume steps
+# by default it is 5%
+#
+#VOLUME_STEP_SIZE=5
+
