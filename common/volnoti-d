@@ -22,34 +22,71 @@ get_volume(){
     echo `pactl get-sink-volume @DEFAULT_SINK@ | awk -W posix '/^Volume: / {gsub("%,?", ""); print $5; exit}'`
 }
 
-play_volume_changed(){
-    $PLAY_SOUND || return
-    paplay -d  @DEFAULT_SINK@ "${VOLUME_CHANGE_SOUND}" & 
-}
-
 get_default_sink_index(){
     pactl list sinks | awk -W posix '/^Sink #/{gsub("#", ""); idx = $2}
         /^[ \t]+Name: / {insink = $2 == "'"$(pactl get-default-sink)"'"; if (insink) { print idx }; exit}'
 }
 
-check_volnoti_command(){
+check_command(){
     cmd="$1"
+    pkg="$2"
 
     command -v "${cmd}" >/dev/null 2>&1 || {
         echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} command ${BOLD}${cmd}${RESET} is missing." >&2
-        echo -e "Install ${BOLD}volnoti${RESET} package, that provides it. Aborting." >&2
+        echo -e "Install ${BOLD}${pkg}${RESET} package, that provides it. Aborting." >&2
         exit 1; 
     }
 }
 
-check_volnoti_command volnoti-show
-check_volnoti_command volnoti
+play_volume_changed(){
+    $PLAY_SOUND || return
+    paplay -d  @DEFAULT_SINK@ "${VOLUME_CHANGE_SOUND}" & 
+}
 
-# Start volnoti if not already running
-if [ ! `pgrep -n -x volnoti` ]
-then
-    volnoti
-fi
+declare -ar ICONS_SYMBOLIC=(
+    audio-volume-muted-symbolic
+    audio-volume-low-symbolic
+    audio-volume-medium-symbolic
+    audio-volume-high-symbolic
+)
+
+get_volume_icon() {
+    local -r volume="$1"
+    local icon=${ICONS_SYMBOLIC[0]} 
+
+    if ! $(is_muted); then
+        if (( volume < 30 )); then icon=${ICONS_SYMBOLIC[1]}
+        elif (( volume < 70 )); then icon=${ICONS_SYMBOLIC[2]}
+        else icon=${ICONS_SYMBOLIC[3]}
+        fi
+    fi
+
+    echo "$icon"
+}
+
+
+replaces_id=0
+show_notification(){
+    local -r volume="$1"
+
+    replaces_id=`gdbus call --session \
+        --dest org.freedesktop.Notifications \
+        --object-path /org/freedesktop/Notifications \
+        --method org.freedesktop.Notifications.Notify \
+        volctl \
+        ${replaces_id} \
+        $(get_volume_icon "${volume}") \
+        "Volume ${volume}%" \
+        "" \
+        [] \
+        "{'transient':<true>, 'x-canonical-private-synchronous':<''>, 'value':<$volume>, 'suppress-sound': <true>}" \
+        2000 \
+        | sed 's/[^ ]* //; s/,.//'`
+}
+
+# TODO Check if already running
+# TODO check if required commands exists
+# TODO check if notification server exists
 
 prev_volume=$(get_volume)
 
@@ -65,7 +102,8 @@ while IFS= read -r line; do
     then
         continue
     fi
-    # show notifcation on volume change || card change, but play sound only on volume change
+    # show notifcation on volume change || card change but play sound only on volume change
+    # TODO show notifications on mute state_change
     if [ "${sink}" == "$(get_default_sink_index)" ]
     then
         prev_volume=$current_volume
@@ -75,16 +113,13 @@ while IFS= read -r line; do
         then
             display_volume=100
         fi
-        if is_muted
+
+        show_notification ${display_volume}
+        if [ "$card_change" != true ]
         then
-            volnoti-show -m ${display_volume}
-        else
-            volnoti-show ${display_volume}
-            if [ "$card_change" != true ]
-            then
-                play_volume_changed
-            fi
+            play_volume_changed
         fi
+
         card_change=false
     fi
     
