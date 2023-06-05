@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/volctl"
+mkdir -p CONFIG_DIR
+
 # Volume change sound.
 declare -r VOLUME_CHANGE_SOUND=${VOLUME_CHANGE_SOUND:-/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga}
 
@@ -18,6 +21,16 @@ declare mute_state_change=false # show notification on mute toggle
 declare -r \
     MS_UNMUTE="unmute" \
     MS_MUTE="mute"
+
+exec 100>${CONFIG_DIR}/lock || {
+    echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} file descriptor redirect to lock file failed. Aborting." >&2
+    exit 1; 
+}
+
+flock -x -n 100 || {
+    echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} failed to acquire lock. Aborting." >&2
+    exit 1; 
+}
 
 get_mute_state() {
     local state="${MS_UNMUTE}"
@@ -95,7 +108,6 @@ show_notification(){
         | sed 's/[^ ]* //; s/,.//'`
 }
 
-# TODO Check if already running
 # TODO check if required commands exists
 # TODO check if notification server exists
 

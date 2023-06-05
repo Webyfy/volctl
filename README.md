@@ -15,6 +15,7 @@ Volume notifcation daemon that uses [volnoti](https://github.com/davidbrazdil/vo
 - **coreutils** - for `stdbuf`
 - **sound-theme-freedesktop** - for `/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga`
 - **libglib2.0-bin** - for `gdbus`
+- **util-linux** - for `flock`
 - **bash**
 - **notification server**
   - `notify-osd` **OR**

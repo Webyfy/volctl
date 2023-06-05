@@ -1,4 +1,4 @@
-VERSION = 0.80
+VERSION = 0.85
 PACKAGE_NAME = volctl
 
 VOLCTL_BIN = volctl
@@ -47,7 +47,7 @@ deb:
 		--pkgversion=$(VERSION) \
 		--pkgrelease=$$(date +"%Y%m%d") \
 		--pkglicense=GPL \
-		--requires=bash,pulseaudio-utils,coreutils,sound-theme-freedesktop,libglib2.0-bin \
+		--requires=bash,pulseaudio-utils,coreutils,sound-theme-freedesktop,flock,libglib2.0-bin \
 		--pakdir=build \
 		--pkggroup=sound \
 		--install=no
