@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""Creates a Notification pop-up bubble"""
+import dbus
+import argparse
+
+APP_NAME="volctl"
+DEFAULT_EXPIRATION_TIMEOUT=2000
+
+ICONS_SYMBOLIC={
+    "muted":"audio-volume-muted-symbolic",
+    "low":"audio-volume-low-symbolic",
+    "medium":"audio-volume-medium-symbolic",
+    "high":"audio-volume-high-symbolic"
+}
+
+def get_volume_icon(volume: int, muted: bool=False)->str:
+    if muted:
+        icon = ICONS_SYMBOLIC["muted"]
+    elif (volume <= 0):
+        icon = ICONS_SYMBOLIC["muted"]
+    elif volume <= 30:
+        icon = ICONS_SYMBOLIC["low"]
+    elif volume <= 70:
+        icon = ICONS_SYMBOLIC["medium"]
+    else:
+        icon = ICONS_SYMBOLIC["high"]
+    
+    return icon
+
+def show_notification(volume:int, replace_id: int = 0, muted:bool=False, 
+                      expiration_timeout:int=DEFAULT_EXPIRATION_TIMEOUT)->int:
+    item                = "org.freedesktop.Notifications"
+    path                = "/org/freedesktop/Notifications"
+    interface           = "org.freedesktop.Notifications"
+    app_name            = APP_NAME
+    icon                = get_volume_icon(volume, muted)
+    title               = f"Volume {volume}%"
+    text                = ""
+    actions_list        = ''
+    hints               = {'transient':True, 'x-canonical-private-synchronous':'', 'value':volume, 'suppress-sound': True}
+
+    bus = dbus.SessionBus()
+    notif = bus.get_object(item, path)
+    notify = dbus.Interface(notif, interface)
+    replace_id=notify.Notify(app_name, replace_id, icon, 
+                              title, text, actions_list, 
+                              hints, expiration_timeout)
+    return replace_id
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Shows volume notification')
+    
+    parser.add_argument("-m","--mute",help="Audio muted", action="store_true", default=False)
+    parser.add_argument("-id","--replace-id",help="An optional ID of an existing notification that this notification is intended to replace", type=int, default=0)
+    parser.add_argument("-t", "--timeout", help="The timeout time in milliseconds since the display of the notification at which the notification should automatically close (default=2000)", type=int, default=2000)
+    parser.add_argument("volume", help="Volume level to notify",type=int)
+    args = parser.parse_args()
+    replace_id=show_notification(args.volume, args.replace_id, args.mute, args.timeout)
+    print(replace_id)
+
+if __name__ == "__main__":
+    main()

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/volctl"
-mkdir -p CONFIG_DIR
 
 # Volume change sound.
 declare -r VOLUME_CHANGE_SOUND=${VOLUME_CHANGE_SOUND:-/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga}
@@ -22,14 +21,32 @@ declare -r \
     MS_UNMUTE="unmute" \
     MS_MUTE="mute"
 
-exec 100>${CONFIG_DIR}/lock || {
-    echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} file descriptor redirect to lock file failed. Aborting." >&2
-    exit 1; 
+check_prerequisites(){
+    mkdir -p CONFIG_DIR || {
+        echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} Failed to create configuration directory. Aborting." >&2
+        exit 1; 
+    }
+
+    # TODO check if required commands exists
+    # local -ar commands=(volntfy pactl stdbuf flock)
+    # TODO check if notification server exists
 }
 
-flock -x -n 100 || {
-    echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} failed to acquire lock. Aborting." >&2
-    exit 1; 
+acquire_lock(){
+    exec 100>${CONFIG_DIR}/lock || {
+        echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} File descriptor redirect to lock file failed. Aborting." >&2
+        exit 1; 
+    }
+
+    flock -x -n 100 || {
+        echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} Failed to acquire lock. Aborting." >&2
+        exit 1; 
+    }
+}
+
+init(){
+    check_prerequisites
+    acquire_lock
 }
 
 get_mute_state() {
@@ -67,52 +84,11 @@ play_volume_changed(){
     paplay -d  @DEFAULT_SINK@ "${VOLUME_CHANGE_SOUND}" & 
 }
 
-declare -ar ICONS_SYMBOLIC=(
-    audio-volume-muted-symbolic
-    audio-volume-low-symbolic
-    audio-volume-medium-symbolic
-    audio-volume-high-symbolic
-)
-
-get_volume_icon() {
-    local -r volume="$1"
-    local icon=${ICONS_SYMBOLIC[0]} 
-
-    if [ "$(get_mute_state)" = "${MS_UNMUTE}" ]; then
-        if (( volume < 30 )); then icon=${ICONS_SYMBOLIC[1]}
-        elif (( volume < 70 )); then icon=${ICONS_SYMBOLIC[2]}
-        else icon=${ICONS_SYMBOLIC[3]}
-        fi
-    fi
-
-    echo "$icon"
-}
-
-
-replaces_id=0
-show_notification(){
-    local -r volume="$1"
-
-    replaces_id=`gdbus call --session \
-        --dest org.freedesktop.Notifications \
-        --object-path /org/freedesktop/Notifications \
-        --method org.freedesktop.Notifications.Notify \
-        volctl \
-        ${replaces_id} \
-        $(get_volume_icon "${volume}") \
-        "Volume ${volume}%" \
-        "" \
-        [] \
-        "{'transient':<true>, 'x-canonical-private-synchronous':<''>, 'value':<$volume>, 'suppress-sound': <true>}" \
-        2000 \
-        | sed 's/[^ ]* //; s/,.//'`
-}
-
-# TODO check if required commands exists
-# TODO check if notification server exists
+init
 
 prev_volume=$(get_volume)
 prev_mute_state=$(get_mute_state)
+replaces_id=0
 
 while IFS= read -r line; do
     if echo "${line}" | grep -q card
@@ -138,13 +114,13 @@ while IFS= read -r line; do
     then
         prev_volume=$current_volume
 
-        display_volume=$current_volume
-        if((display_volume>100))
+        if [ "${current_mute_state}" == "${MS_UNMUTE}" ]
         then
-            display_volume=100
+            replaces_id=`volntfy -id ${replaces_id} ${current_volume}`
+        else
+            replaces_id=`volntfy -m -id ${replaces_id} ${current_volume}`
         fi
 
-        show_notification ${display_volume}
         if [ "$card_change" != true ]
         then
             play_volume_changed

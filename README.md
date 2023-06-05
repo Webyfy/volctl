@@ -11,11 +11,11 @@ Volume controller with following commands
 Volume notifcation daemon that uses [volnoti](https://github.com/davidbrazdil/volnoti) for notifcation
 
 ## Dependencies
-- **pulseaudio-utils** - for `pactl`
-- **coreutils** - for `stdbuf`
-- **sound-theme-freedesktop** - for `/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga`
-- **libglib2.0-bin** - for `gdbus`
-- **util-linux** - for `flock`
+- **pulseaudio-utils** - provides `pactl`
+- **coreutils** - provides `stdbuf`
+- **sound-theme-freedesktop** - provides `/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga`
+- **util-linux** - provides `flock`
+- **python3-dbus** - for `volntfy`
 - **bash**
 - **notification server**
   - `notify-osd` **OR**
