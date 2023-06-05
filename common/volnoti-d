@@ -13,9 +13,20 @@ declare -r \
 
 declare prev_volume # notify only on volume change 
 declare card_change=false # don't play sound on card_change
+declare mute_state_change=false # show notification on mute toggle
 
-is_muted() {
-    return `pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'`
+declare -r \
+    MS_UNMUTE="unmute" \
+    MS_MUTE="mute"
+
+get_mute_state() {
+    local state="${MS_UNMUTE}"
+    if pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'
+    then
+        state="${MS_MUTE}"
+    fi
+
+    echo "${state}"
 }
 
 get_volume(){
@@ -54,7 +65,7 @@ get_volume_icon() {
     local -r volume="$1"
     local icon=${ICONS_SYMBOLIC[0]} 
 
-    if ! $(is_muted); then
+    if [ "$(get_mute_state)" = "${MS_UNMUTE}" ]; then
         if (( volume < 30 )); then icon=${ICONS_SYMBOLIC[1]}
         elif (( volume < 70 )); then icon=${ICONS_SYMBOLIC[2]}
         else icon=${ICONS_SYMBOLIC[3]}
@@ -89,6 +100,7 @@ show_notification(){
 # TODO check if notification server exists
 
 prev_volume=$(get_volume)
+prev_mute_state=$(get_mute_state)
 
 while IFS= read -r line; do
     if echo "${line}" | grep -q card
@@ -97,13 +109,19 @@ while IFS= read -r line; do
         continue
     fi
     sink=`echo "${line}" | awk -F# '{print $2}'`
+    current_mute_state="$(get_mute_state)"
+    if [ "${current_mute_state}" != "${prev_mute_state}" ]
+    then
+        mute_state_change=true
+        prev_mute_state=$current_mute_state
+    fi
+
     current_volume=$(get_volume)
-    if [ "$current_volume" == "$prev_volume" ] && [ "$card_change" != true ]
+    if [ "$current_volume" == "$prev_volume" ] && [ "$card_change" != true ] && [ "$mute_state_change" != true ]
     then
         continue
     fi
-    # show notifcation on volume change || card change but play sound only on volume change
-    # TODO show notifications on mute state_change
+    # show notifcation on volume change || card change || mute_toggle but don't play sound on card change
     if [ "${sink}" == "$(get_default_sink_index)" ]
     then
         prev_volume=$current_volume
@@ -119,9 +137,9 @@ while IFS= read -r line; do
         then
             play_volume_changed
         fi
-
-        card_change=false
     fi
+    card_change=false
+    mute_state_change=false
     
 done < <(pactl subscribe | stdbuf -oL grep -e "Event 'change' on sink #" -e "Event 'change' on card #")
 
