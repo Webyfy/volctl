@@ -1,4 +1,6 @@
+VERSION = 0.80
 PACKAGE_NAME = volctl
+
 VOLCTL_BIN = volctl
 VOLNOTI_D_BIN = volnoti-d
 
@@ -19,7 +21,9 @@ build/$(VOLNOTI_D_BIN): common/$(VOLNOTI_D_BIN)
 	$(Q)cp $< $@
 
 clean:
+	$(RM) -f backup*.tgz
 	$(RM) -rf build
+	$(RM) -rf doc-pak
 
 install:all
 	install -Dm755 build/$(VOLCTL_BIN) "$(BINDIR)/$(VOLCTL_BIN)"
@@ -31,4 +35,21 @@ uninstall:
 	$(RM) "$(BINDIR)/$(VOLNOTI_D_BIN)"
 	$(RM) -rf "$(DESTDIR)$(SKELDIR)"
 
-.PHONY: all clean uninstall
+deb:
+	checkinstall -D -y \
+		--maintainer "webyfy \<info@webyfy.com\>" \
+		--deldesc=yes \
+		--deldoc=yes \
+		--delspec=yes \
+		--fstrans=yes \
+		--arch=all \
+		--pkgname=$(PACKAGE_NAME) \
+		--pkgversion=$(VERSION) \
+		--pkgrelease=$$(date +"%Y%m%d") \
+		--pkglicense=GPL \
+		--requires=bash,pulseaudio-utils,coreutils,sound-theme-freedesktop,libglib2.0-bin \
+		--pakdir=build \
+		--pkggroup=sound \
+		--install=no
+
+.PHONY: all clean uninstall deb
