@@ -33,7 +33,7 @@ check_command(){
 }
 
 check_prerequisites(){
-    mkdir -p CONFIG_DIR || {
+    mkdir -p "${CONFIG_DIR}" || {
         echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} Failed to create configuration directory. Aborting." >&2
         exit 1; 
     }
