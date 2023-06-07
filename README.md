@@ -7,7 +7,26 @@ Volume controller with following commands
 * `down`    - decrease volume
 * `mute`    - toggle mute 
 
-## volnoti-d
+## volntfy
+Volume level notifcation tool (`volntfy`) that shows notification using [FreeDesktop Desktop Notification](https://specifications.freedesktop.org/notification-spec/notification-spec-latest.html) and plays notification sound when applicable
+
+### Usage
+```shell 
+volntfy [-h] [-m] [-id REPLACE_ID] [-t TIMEOUT] volume
+```
+* **positional arguments**
+  * volume - Volume level to notify
+
+* **options**
+  * -m, --mute : Audio muted
+  * -id REPLACE_ID, --replace-id REPLACE_ID : An optional ID of an existing notification that this notification is intended to replace
+  * -t TIMEOUT, --timeout TIMEOUT : The timeout time in milliseconds since the display of the notification at which the notification should automatically close (default=2000)
+
+
+## volntfy-d
+Daemon that listens for volume change events and runs `volntfy`
+
+Notification Freedesktop Desktop Notification client for volume notification with icon and sound ()
 Volume notifcation daemon that uses [volnoti](https://github.com/davidbrazdil/volnoti) for notifcation
 
 ## Dependencies
@@ -23,4 +42,5 @@ Volume notifcation daemon that uses [volnoti](https://github.com/davidbrazdil/vo
   - `dunst` **OR**
   - `lxqt-notificationd` **OR**
   - `notification-daemon` **OR**
-  - `mate-notification-daemon`
+  - `mate-notification-daemon` **OR**
+  - Desktop environment with builtin notification server (like Cinnamon, Deepin, Enlightenment, GNOME, GNOME Flashback and KDE Plasma)
