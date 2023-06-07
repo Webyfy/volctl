@@ -44,12 +44,12 @@ uninstall:
 	$(RM) -rf "$(DESTDIR)$(SKELDIR)"
 
 deb:
-	checkinstall -D -y \
+	sudo checkinstall -D -y \
 		--maintainer "webyfy \<info@webyfy.com\>" \
 		--deldesc=yes \
 		--deldoc=yes \
 		--delspec=yes \
-		--fstrans=yes \
+		--fstrans=no \
 		--arch=all \
 		--pkgname=$(PACKAGE_NAME) \
 		--pkgversion=$(VERSION) \
