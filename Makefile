@@ -1,4 +1,4 @@
-VERSION = 0.95.5
+VERSION = 0.98
 PACKAGE_NAME = volctl
 
 VOLCTL_BIN = volctl

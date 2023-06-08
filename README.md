@@ -10,6 +10,25 @@ Volume controller with following commands
 ## volntfy
 Volume level notifcation tool (`volntfy`) that shows notification using [FreeDesktop Desktop Notification](https://specifications.freedesktop.org/notification-spec/notification-spec-latest.html) and plays notification sound when applicable
 
+## Installation
+Clone the repository
+```shell
+git clone https://gitlab.com/webyfy/iot/e-gurukul/volctl.git
+cd volctl
+```
+Install it by using either of the below methods:
+### by `install` command
+```shell
+sudo make install
+# You can uninstall it by running `sudo make unistall` from this direcotry
+```
+### debian package
+> this requires `checkinstall` to be installed in your system
+```shell
+make deb
+sudo apt install ./build/volctl*.deb
+```
+
 ### Usage
 ```shell 
 volntfy [-h] [-m] [-id REPLACE_ID] [-t TIMEOUT] volume
@@ -28,6 +47,11 @@ Daemon that listens for volume change events and runs `volntfy`
 
 Notification Freedesktop Desktop Notification client for volume notification with icon and sound ()
 Volume notifcation daemon that uses [volnoti](https://github.com/davidbrazdil/volnoti) for notifcation
+
+## Configuration
+A config file resides in `~/.config/volctl/config` and allows for some options:
+- **UPPER_THRESHOLD** - The maximum allowed volume level in percentage (defaults is 100)
+- **VOLUME_STEP_SIZE** - The percentage by which volume changes when using volctl (default is 5)
 
 ## Dependencies
 - **pulseaudio-utils** - provides `pactl`
