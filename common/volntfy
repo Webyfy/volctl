@@ -2,28 +2,40 @@
 """Creates a Notification pop-up bubble"""
 import dbus
 import argparse
+import xdg.IconTheme
+from os import path
 
 APP_NAME="volctl"
 DEFAULT_EXPIRATION_TIMEOUT=2000
+DATADIR="" # Make updates it based on install prefix
+ICONS_DIR=path.join(DATADIR, "icons")
 
-ICONS_SYMBOLIC={
-    "muted":"audio-volume-muted-symbolic",
-    "low":"audio-volume-low-symbolic",
-    "medium":"audio-volume-medium-symbolic",
-    "high":"audio-volume-high-symbolic"
-}
+if xdg.IconTheme.getIconPath("audio-volume-muted-symbolic") is not None:
+    ICONS={
+        "muted":"audio-volume-muted-symbolic",
+        "low":"audio-volume-low-symbolic",
+        "medium":"audio-volume-medium-symbolic",
+        "high":"audio-volume-high-symbolic"
+    }
+else:
+    ICONS={
+        "muted":"file://"+path.abspath(path.join(ICONS_DIR, "muted.svg")),
+        "low":"file://"+path.abspath(path.join(ICONS_DIR, "low.svg")),
+        "medium":"file://"+path.abspath(path.join(ICONS_DIR, "medium.svg")),
+        "high":"file://"+path.abspath(path.join(ICONS_DIR, "high.svg"))
+    }
 
 def get_volume_icon(volume: int, muted: bool=False)->str:
     if muted:
-        icon = ICONS_SYMBOLIC["muted"]
+        icon = ICONS["muted"]
     elif (volume <= 0):
-        icon = ICONS_SYMBOLIC["muted"]
+        icon = ICONS["muted"]
     elif volume <= 30:
-        icon = ICONS_SYMBOLIC["low"]
+        icon = ICONS["low"]
     elif volume <= 70:
-        icon = ICONS_SYMBOLIC["medium"]
+        icon = ICONS["medium"]
     else:
-        icon = ICONS_SYMBOLIC["high"]
+        icon = ICONS["high"]
     
     return icon
 

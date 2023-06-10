@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SKEL="@SKELDIR@/config.skel"
+SKEL="@DATADIR@/config.skel"
 CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/volctl/config"
 
 declare -ir \

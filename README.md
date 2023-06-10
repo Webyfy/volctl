@@ -58,6 +58,7 @@ A config file resides in `~/.config/volctl/config` and allows for some options:
 - **coreutils** - provides `stdbuf`
 - **sound-theme-freedesktop** - provides `/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga`
 - **util-linux** - provides `flock`
+- **ncurses-bin** - provides `tput`
 - **python3-dbus** - for `volntfy`
 - **bash**
 - **notification server**
