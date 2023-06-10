@@ -77,6 +77,10 @@ load_config(){
     is_int "$UPPER_THRESHOLD" || UPPER_THRESHOLD="${DEFAULT_UPPER_THRESHOLD}"
 }
 
+is_muted() {
+    return `pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'`
+}
+
 setup_color
 
 load_config
@@ -99,10 +103,17 @@ case "$operation" in
         fi
         
         pactl set-sink-volume @DEFAULT_SINK@ ${volume}%
+        echo "volume set to ${volume}%"
         ;;
 
     mute)
         pactl set-sink-mute @DEFAULT_SINK@ toggle
+        if is_muted
+        then
+            echo "muted"
+        else
+            echo "unmuted"
+        fi
         ;;
 
     *)
