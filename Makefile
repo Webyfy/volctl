@@ -1,4 +1,4 @@
-VERSION = 0.99.3
+VERSION = 0.99.5
 PACKAGE_NAME = volctl
 
 VOLCTL_BIN = volctl
@@ -37,8 +37,6 @@ install:all
 	install -Dm755 build/$(VOLNTFY_BIN) "$(BINDIR)/$(VOLNTFY_BIN)"
 	install -Dm755 build/$(VOLNTFYD_BIN) "$(BINDIR)/$(VOLNTFYD_BIN)"
 	install -Dm644 common/config.skel "$(DATADIR)/config.skel"
-	install -Ddm 755 $(DATADIR)/icons/
-	install -Dm 644 icons/*.svg $(DATADIR)/icons/
 
 uninstall:
 	$(RM) "$(BINDIR)/$(VOLCTL_BIN)"

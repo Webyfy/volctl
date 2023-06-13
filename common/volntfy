@@ -2,28 +2,16 @@
 """Creates a Notification pop-up bubble"""
 import dbus
 import argparse
-import xdg.IconTheme
-from os import path
 
 APP_NAME="volctl"
 DEFAULT_EXPIRATION_TIMEOUT=2000
-DATADIR="" # Make updates it based on install prefix
-ICONS_DIR=path.join(DATADIR, "icons")
 
-if xdg.IconTheme.getIconPath("audio-volume-muted-symbolic") is not None:
-    ICONS={
-        "muted":"audio-volume-muted-symbolic",
-        "low":"audio-volume-low-symbolic",
-        "medium":"audio-volume-medium-symbolic",
-        "high":"audio-volume-high-symbolic"
-    }
-else:
-    ICONS={
-        "muted":"file://"+path.abspath(path.join(ICONS_DIR, "muted.svg")),
-        "low":"file://"+path.abspath(path.join(ICONS_DIR, "low.svg")),
-        "medium":"file://"+path.abspath(path.join(ICONS_DIR, "medium.svg")),
-        "high":"file://"+path.abspath(path.join(ICONS_DIR, "high.svg"))
-    }
+ICONS={
+    "muted":"audio-volume-muted-symbolic",
+    "low":"audio-volume-low-symbolic",
+    "medium":"audio-volume-medium-symbolic",
+    "high":"audio-volume-high-symbolic"
+}
 
 def get_volume_icon(volume: int, muted: bool=False)->str:
     if muted:
