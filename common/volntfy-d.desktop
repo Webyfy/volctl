@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=volntfy daemon
+Comment=Display volume notifications
+Exec=@BINDIR@/volntfy-d
+Terminal=false
+Type=Application
+NotShowIn=KDE;
+X-GNOME-Autostart-enabled=false
