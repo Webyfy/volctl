@@ -9,6 +9,7 @@ VOLNTFYD_BIN = volntfy-d
 PREFIX ?= /usr
 BINDIR = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share/$(PACKAGE_NAME)
+BASHDIR = $(PREFIX)/share/bash-completion/completions
 RM = rm
 Q = @
 
@@ -37,11 +38,14 @@ install:all
 	install -Dm755 build/$(VOLNTFY_BIN) "$(BINDIR)/$(VOLNTFY_BIN)"
 	install -Dm755 build/$(VOLNTFYD_BIN) "$(BINDIR)/$(VOLNTFYD_BIN)"
 	install -Dm644 common/config.skel "$(DATADIR)/config.skel"
+	install -p -dm755 "$(BASHDIR)"
+	install -Dm644 common/volctl_completion "$(BASHDIR)/_volctl"
 
 uninstall:
-	$(RM) "$(BINDIR)/$(VOLCTL_BIN)"
-	$(RM) "$(BINDIR)/$(VOLNTFY_BIN)"
-	$(RM) "$(BINDIR)/$(VOLNTFYD_BIN)"
+	$(RM) -f "$(BINDIR)/$(VOLCTL_BIN)"
+	$(RM) -f "$(BINDIR)/$(VOLNTFY_BIN)"
+	$(RM) -f "$(BINDIR)/$(VOLNTFYD_BIN)"
+	$(RM) -f "$(BASHDIR)/_volctl"
 	$(RM) -rf "$(DATADIR)"
 
 deb:

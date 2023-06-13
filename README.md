@@ -72,7 +72,5 @@ A config file resides in `~/.config/volctl/config` and allows for some options:
   - Desktop environment with builtin notification server (like Cinnamon, Deepin, Enlightenment, GNOME, GNOME Flashback and KDE Plasma)
 
 ## TODO
-- [x] Remove pactl '`get`' commands
-- [ ] bash completion
 - [ ] suggests dependency - `notification-daemon | notify-osd | xfce4-notifyd | dunst | lxqt-notificationd | mate-notification-daemon | gnome-shell | plasma-desktop | plasma-nano`
 - [ ] Use xz compression in deb
