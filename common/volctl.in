@@ -78,14 +78,16 @@ load_config(){
 }
 
 is_muted() {
-    return `pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'`
+    return `pacmd list-sinks|grep -A 15 '* index' | awk '/muted:/{ print $2 }' | grep -q 'yes'`
+    # return `pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'`
 }
 
 setup_color
 
 load_config
 
-volume=`pactl get-sink-volume @DEFAULT_SINK@ | awk -W posix '/^Volume: / {gsub("%,?", ""); print $5; exit}'`
+# volume=`pactl get-sink-volume @DEFAULT_SINK@ | awk -W posix '/^Volume: / {gsub("%,?", ""); print $5; exit}'`
+volume=`pacmd list-sinks|grep -A 15 '* index' | awk -W posix '/volume: / {gsub("%,?", ""); print $5; exit}'`
 
 operation="$1"
 case "$operation" in
@@ -100,6 +102,9 @@ case "$operation" in
         if ((volume>UPPER_THRESHOLD))
         then
             volume=$UPPER_THRESHOLD
+        elif ((volume<0))
+        then
+            volume=0
         fi
         
         pactl set-sink-volume @DEFAULT_SINK@ ${volume}%

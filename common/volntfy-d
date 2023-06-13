@@ -73,8 +73,9 @@ init(){
 
 get_mute_state() {
     local state="${MS_UNMUTE}"
-    if pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'
-    then
+    # if pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'
+    if `pacmd list-sinks|grep -A 15 '* index' | awk '/muted:/{ print $2 }' | grep -q 'yes'`; 
+    then 
         state="${MS_MUTE}"
     fi
 
@@ -82,12 +83,14 @@ get_mute_state() {
 }
 
 get_volume(){
-    echo `pactl get-sink-volume @DEFAULT_SINK@ | awk -W posix '/^Volume: / {gsub("%,?", ""); print $5; exit}'`
+    echo `pacmd list-sinks|grep -A 15 '* index' | awk -W posix '/volume: / {gsub("%,?", ""); print $5; exit}'`
+    # echo `pactl get-sink-volume @DEFAULT_SINK@ | awk -W posix '/^Volume: / {gsub("%,?", ""); print $5; exit}'`
 }
 
 get_default_sink_index(){
-    pactl list sinks | awk -W posix '/^Sink #/{gsub("#", ""); idx = $2}
-        /^[ \t]+Name: / {insink = $2 == "'"$(pactl get-default-sink)"'"; if (insink) { print idx }; exit}'
+    pacmd list-sinks|awk '/\* index:/{ print $3 }'
+    # pactl list sinks | awk -W posix '/^Sink #/{gsub("#", ""); idx = $2}
+    #     /^[ \t]+Name: / {insink = $2 == "'"$(pactl get-default-sink)"'"; if (insink) { print idx }; exit}'
 }
 
 play_volume_changed(){
