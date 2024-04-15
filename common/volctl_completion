@@ -1,1 +1,1 @@
-complete -W "up down mute" volctl
+complete -W "up down mute --help --version" volctl

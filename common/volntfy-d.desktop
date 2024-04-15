@@ -5,4 +5,3 @@ Exec=@BINDIR@/volntfy-d
 Terminal=false
 Type=Application
 OnlyShowIn=YADE;
-X-GNOME-Autostart-enabled=false

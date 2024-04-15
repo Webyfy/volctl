@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+APP_VERSION=@APP_VERSION@
 SKEL="@DATADIR@/config.skel"
 CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/volctl/config"
 
@@ -29,18 +30,19 @@ setup_color() {
     fi
 }
 
-usage(){
-    cat <<- EOF 1>&2
-${YELLOW}Usage:${RESET} $0  <command>
-Controls volume
+USAGE_MSG="$(cat <<- EOF
+${YELLOW}Usage:${RESET} $(basename $0)  <command>
+
+volctl controls system volume
 
 ${YELLOW}Commands:${RESET}
     ${GREEN}up${RESET}                  increase volume
     ${GREEN}down${RESET}                decrease volume
     ${GREEN}mute${RESET}                toggle mute
+    ${GREEN}--help${RESET}              show help message and exit
+    ${GREEN}--version${RESET}           show program's version number and exit
 EOF
-    exit $ERR_USAGE
-}
+)"
 
 is_int(){
     [[ "$1" =~ ^[0-9]+$ ]]
@@ -121,8 +123,17 @@ case "$operation" in
         fi
         ;;
 
+    --version)
+        echo "$(basename ${0}) ${APP_VERSION}"
+        ;;
+
+    --help)
+        echo "${USAGE_MSG}"
+        ;;
+
     *)
-        usage
+        echo "${USAGE_MSG}" >&2
+        exit $ERR_USAGE
         ;;
 
 esac

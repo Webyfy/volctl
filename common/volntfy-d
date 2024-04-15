@@ -98,50 +98,53 @@ play_volume_changed(){
     paplay -d  @DEFAULT_SINK@ "${VOLUME_CHANGE_SOUND}" & 
 }
 
-init
+main(){
+    init
 
-prev_volume=$(get_volume)
-prev_mute_state=$(get_mute_state)
-replaces_id=0
+    prev_volume=$(get_volume)
+    prev_mute_state=$(get_mute_state)
+    replaces_id=0
 
-while IFS= read -r line; do
-    if echo "${line}" | grep -q card
-    then
-        card_change=true
-        continue
-    fi
-    sink=`echo "${line}" | awk -F# '{print $2}'`
-    current_mute_state="$(get_mute_state)"
-    if [ "${current_mute_state}" != "${prev_mute_state}" ]
-    then
-        mute_state_change=true
-        prev_mute_state=$current_mute_state
-    fi
-
-    current_volume=$(get_volume)
-    if [ "$current_volume" == "$prev_volume" ] && [ "$card_change" != true ] && [ "$mute_state_change" != true ]
-    then
-        continue
-    fi
-    # show notifcation on volume change || card change || mute_toggle but don't play sound on card change
-    if [ "${sink}" == "$(get_default_sink_index)" ]
-    then
-        prev_volume=$current_volume
-
-        if [ "${current_mute_state}" == "${MS_UNMUTE}" ]
+    while IFS= read -r line; do
+        if echo "${line}" | grep -q card
         then
-            replaces_id=`volntfy -id ${replaces_id} ${current_volume}`
-        else
-            replaces_id=`volntfy -m -id ${replaces_id} ${current_volume}`
+            card_change=true
+            continue
+        fi
+        sink=`echo "${line}" | awk -F# '{print $2}'`
+        current_mute_state="$(get_mute_state)"
+        if [ "${current_mute_state}" != "${prev_mute_state}" ]
+        then
+            mute_state_change=true
+            prev_mute_state=$current_mute_state
         fi
 
-        if [ "$card_change" != true ]
+        current_volume=$(get_volume)
+        if [ "$current_volume" == "$prev_volume" ] && [ "$card_change" != true ] && [ "$mute_state_change" != true ]
         then
-            play_volume_changed
+            continue
         fi
-    fi
-    card_change=false
-    mute_state_change=false
-    
-done < <(pactl subscribe | stdbuf -oL grep -e "Event 'change' on sink #" -e "Event 'change' on card #")
+        # show notifcation on volume change || card change || mute_toggle but don't play sound on card change
+        if [ "${sink}" == "$(get_default_sink_index)" ]
+        then
+            prev_volume=$current_volume
 
+            if [ "${current_mute_state}" == "${MS_UNMUTE}" ]
+            then
+                replaces_id=`volntfy -id ${replaces_id} ${current_volume}`
+            else
+                replaces_id=`volntfy -m -id ${replaces_id} ${current_volume}`
+            fi
+
+            if [ "$card_change" != true ]
+            then
+                play_volume_changed
+            fi
+        fi
+        card_change=false
+        mute_state_change=false
+        
+    done < <(pactl subscribe | stdbuf -oL grep -e "Event 'change' on sink #" -e "Event 'change' on card #")
+}
+
+## if --help or --version handle here else main
