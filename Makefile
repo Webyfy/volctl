@@ -35,7 +35,7 @@ build/$(VOLCTL_BIN): common/$(VOLCTL_BIN).in
 	$(Q)chmod +x $@
 
 
-build/$(VOLNTFY_BIN): common/$(VOLNTFY_BIN)
+build/$(VOLNTFY_BIN): common/$(VOLNTFY_BIN).in
 	$(Q)mkdir -p build
 	$(Q)sed -e 's|DATADIR=""|DATADIR="'$(DATADIR)'"|' $<  >$@
 	$(Q)sed -e 's|@APP_VERSION@|'$(VERSION)'|' $<  >$@
