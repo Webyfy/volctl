@@ -30,21 +30,24 @@ all: build/$(VOLCTL_BIN) build/$(VOLNTFYD_BIN) build/$(VOLNTFY_BIN) build/$(VOLN
 
 build/$(VOLCTL_BIN): common/$(VOLCTL_BIN).in
 	$(Q)mkdir -p build
-	$(Q)sed -e 's|@DATADIR@|'$(DATADIR)'|' $<  >$@
-	$(Q)sed -e 's|@APP_VERSION@|'$(VERSION)'|' $<  >$@
+	$(Q)cp $< $@
+	$(Q)sed -i 's|@DATADIR@|'$(DATADIR)'|' $@
+	$(Q)sed -i 's|@APP_VERSION@|'$(VERSION)'|' $@
 	$(Q)chmod +x $@
 
 
 build/$(VOLNTFY_BIN): common/$(VOLNTFY_BIN).in
 	$(Q)mkdir -p build
-	$(Q)sed -e 's|DATADIR=""|DATADIR="'$(DATADIR)'"|' $<  >$@
-	$(Q)sed -e 's|@APP_VERSION@|'$(VERSION)'|' $<  >$@
+	$(Q)cp $< $@
+	$(Q)sed -i 's|DATADIR=""|DATADIR="'$(DATADIR)'"|' $@
+	$(Q)sed -i 's|@APP_VERSION@|'$(VERSION)'|' $@
 	$(Q)chmod +x $@
 
 
 build/$(VOLNTFYD_BIN): common/$(VOLNTFYD_BIN)
 	$(Q)mkdir -p build
 	$(Q)cp $< $@
+	$(Q)sed -i 's|@APP_VERSION@|'$(VERSION)'|' $@
 	$(Q)chmod +x $@
 
 build/$(VOLNTFYD_DESKTOP): common/$(VOLNTFYD_DESKTOP)
@@ -59,7 +62,7 @@ clean:
 	$(RM) -f backup*.tgz
 	$(RM) -rf build
 
-install:all
+install: all
 	install -Dm755 build/$(VOLCTL_BIN) "$(bindir)/$(VOLCTL_BIN)"
 	install -Dm755 build/$(VOLNTFY_BIN) "$(bindir)/$(VOLNTFY_BIN)"
 	install -Dm755 build/$(VOLNTFYD_BIN) "$(bindir)/$(VOLNTFYD_BIN)"

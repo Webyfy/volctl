@@ -1,6 +1,39 @@
 #!/usr/bin/env bash
 
+APP_VERSION=@APP_VERSION@
+SCRIPT="${0}"
+SCRIPT_NAME="$(basename ${SCRIPT})"
+
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/volctl"
+
+declare -ir \
+    ERR_USAGE=64
+
+generate_usage(){
+    echo "Usage: ${1} [--help] [--version]"
+}
+
+show_help(){
+  local usage=$(generate_usage ${SCRIPT_NAME})
+  
+  cat <<- EOF
+	${usage}
+
+	volntfy-d is a daemon for showing volume notifications
+
+	Options:
+	    --help              show help message and exit
+	    --version           show program's version number and exit
+	EOF
+}
+
+show_usage_error(){
+  local usage=$(generate_usage ${SCRIPT})
+
+  echo "${usage}" >&2
+  exit $ERR_USAGE
+}
+
 
 # Volume change sound.
 declare -r VOLUME_CHANGE_SOUND=${VOLUME_CHANGE_SOUND:-/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga}
@@ -147,4 +180,27 @@ main(){
     done < <(pactl subscribe | stdbuf -oL grep -e "Event 'change' on sink #" -e "Event 'change' on card #")
 }
 
-## if --help or --version handle here else main
+handle_options(){
+  option="${1}"
+
+  case "${option}" in
+    --help)
+      show_help
+      ;;
+
+    --version)
+      echo "${SCRIPT_NAME} ${APP_VERSION}"
+      ;;
+
+    *)
+      show_usage_error
+  esac
+}
+
+if [ $# -eq 0 ]; then
+  main
+elif [ $# -eq 1 ]; then
+  handle_options "${1}"
+else
+  show_usage_error
+fi
