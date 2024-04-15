@@ -26,7 +26,8 @@ BASH_COMPLETION_DIR := $(DESTDIR)$(BASH_COMPLETION_DIR)
 AUTOSTART_DIR := $(DESTDIR)$(AUTOSTART_DIR)
 MANPAGE_DIR := $(DESTDIR)$(MANPAGE_DIR)
 
-all: build/$(VOLCTL_BIN) build/$(VOLNTFYD_BIN) build/$(VOLNTFY_BIN) build/$(VOLNTFYD_DESKTOP)
+all: build/$(VOLCTL_BIN) build/$(VOLNTFYD_BIN) build/$(VOLNTFY_BIN) build/$(VOLNTFYD_DESKTOP) $(wildcard common/*.1)
+	$(Q)cp common/*.1 build/
 
 build/$(VOLCTL_BIN): common/$(VOLCTL_BIN).in
 	$(Q)mkdir -p build
@@ -75,9 +76,9 @@ install: all
 	install -p -dm755 "$(AUTOSTART_DIR)"
 	install -Dm644 build/$(VOLNTFYD_DESKTOP) "$(AUTOSTART_DIR)/$(VOLNTFYD_DESKTOP)"
 	# man files
-	install -Dm644 common/$(VOLCTL_BIN).1 "$(MANPAGE_DIR)"
-	install -Dm644 common/$(VOLNTFY_BIN).1 "$(MANPAGE_DIR)"
-	install -Dm644 common/$(VOLNTFYD_BIN).1 "$(MANPAGE_DIR)"
+	install -Dm644 build/$(VOLCTL_BIN).1 "$(MANPAGE_DIR)"
+	install -Dm644 build/$(VOLNTFY_BIN).1 "$(MANPAGE_DIR)"
+	install -Dm644 build/$(VOLNTFYD_BIN).1 "$(MANPAGE_DIR)"
 
 uninstall:
 	$(RM) -f "$(bindir)/$(VOLCTL_BIN)"
