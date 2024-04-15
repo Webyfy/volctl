@@ -44,7 +44,7 @@ build/$(VOLNTFY_BIN): common/$(VOLNTFY_BIN).in
 	$(Q)chmod +x $@
 
 
-build/$(VOLNTFYD_BIN): common/$(VOLNTFYD_BIN)
+build/$(VOLNTFYD_BIN): common/$(VOLNTFYD_BIN).in
 	$(Q)mkdir -p build
 	$(Q)cp $< $@
 	$(Q)sed -i 's|@APP_VERSION@|'$(VERSION)'|' $@
@@ -56,6 +56,7 @@ build/$(VOLNTFYD_DESKTOP): common/$(VOLNTFYD_DESKTOP)
 
 gen-man: build/$(VOLCTL_BIN) build/$(VOLNTFYD_BIN) build/$(VOLNTFY_BIN)
 	python3 -m help2man -o common/$(VOLCTL_BIN).1 build/$(VOLCTL_BIN)
+	python3 -m help2man -o common/$(VOLNTFYD_BIN).1 build/$(VOLNTFYD_BIN)
 	python3 -m help2man -o common/$(VOLNTFY_BIN).1 build/$(VOLNTFY_BIN) 
 
 clean:
@@ -76,6 +77,7 @@ install: all
 	# man files
 	install -Dm644 common/$(VOLCTL_BIN).1 "$(MANPAGE_DIR)"
 	install -Dm644 common/$(VOLNTFY_BIN).1 "$(MANPAGE_DIR)"
+	install -Dm644 common/$(VOLNTFYD_BIN).1 "$(MANPAGE_DIR)"
 
 uninstall:
 	$(RM) -f "$(bindir)/$(VOLCTL_BIN)"
@@ -86,6 +88,7 @@ uninstall:
 	$(RM) -rf "$(DATADIR)"
 	$(RM) -f "$(MANPAGE_DIR)/$(VOLCTL_BIN).1"
 	$(RM) -f "$(MANPAGE_DIR)/$(VOLNTFY_BIN).1"
+	$(RM) -f "$(MANPAGE_DIR)/$(VOLNTFYD_BIN).1"
 
 deb: all
 	chmod 0644 doc-pak/*
