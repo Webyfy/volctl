@@ -1,23 +1,28 @@
-VERSION = 0.99.9
-PACKAGE_NAME = volctl
+VERSION := 0.99.9
+PACKAGE_NAME := volctl
 
-VOLCTL_BIN = volctl
-VOLNTFY_BIN = volntfy
-VOLNTFYD_BIN = volntfy-d
-VOLNTFYD_DESKTOP = volntfy-d.desktop
+VOLCTL_BIN := volctl
+VOLNTFY_BIN := volntfy
+VOLNTFYD_BIN := volntfy-d
+VOLNTFYD_DESKTOP := volntfy-d.desktop
 
-PREFIX ?= /usr
-PREFIX := $(realpath $(PREFIX))
-BINDIR = $(PREFIX)/bin
-DATADIR = $(PREFIX)/share/$(PACKAGE_NAME)
-BASH_COMPLETION_DIR = $(PREFIX)/share/bash-completion/completions
-AUTOSTART_DIR = /etc/xdg/autostart
-RM = rm
-Q = @
+prefix := /usr
+exec_prefix := $(prefix)
+bindir := $(exec_prefix)/bin
+DATADIR := $(prefix)/share/$(PACKAGE_NAME)
+BASH_COMPLETION_DIR := $(prefix)/share/bash-completion/completions
+AUTOSTART_DIR := /etc/xdg/autostart
+RM := rm
+Q := @
 
-ifneq (,$(findstring ${HOME},$(PREFIX)))
-	AUTOSTART_DIR = "${HOME}/.config/autostart"
+ifneq (,$(findstring ${HOME},$(realpath $(prefix))))
+	AUTOSTART_DIR := "${HOME}/.config/autostart"
 endif
+
+bindir := $(DESTDIR)$(bindir)
+DATADIR := $(DESTDIR)$(DATADIR)
+BASH_COMPLETION_DIR := $(DESTDIR)$(BASH_COMPLETION_DIR)
+AUTOSTART_DIR := $(DESTDIR)$(AUTOSTART_DIR)
 
 all: build/$(VOLCTL_BIN) build/$(VOLNTFYD_BIN) build/$(VOLNTFY_BIN) build/$(VOLNTFYD_DESKTOP)
 
@@ -35,7 +40,7 @@ build/$(VOLNTFYD_BIN): common/$(VOLNTFYD_BIN)
 
 build/$(VOLNTFYD_DESKTOP): common/$(VOLNTFYD_DESKTOP)
 	$(Q)mkdir -p build
-	$(Q)sed -e 's|@BINDIR@|'$(BINDIR)'|' $<  >$@
+	$(Q)sed -e 's|@BINDIR@|'$(bindir)'|' $<  >$@
 
 clean:
 	$(RM) -f backup*.tgz
@@ -43,9 +48,9 @@ clean:
 	$(RM) -rf doc-pak
 
 install:all
-	install -Dm755 build/$(VOLCTL_BIN) "$(BINDIR)/$(VOLCTL_BIN)"
-	install -Dm755 build/$(VOLNTFY_BIN) "$(BINDIR)/$(VOLNTFY_BIN)"
-	install -Dm755 build/$(VOLNTFYD_BIN) "$(BINDIR)/$(VOLNTFYD_BIN)"
+	install -Dm755 build/$(VOLCTL_BIN) "$(bindir)/$(VOLCTL_BIN)"
+	install -Dm755 build/$(VOLNTFY_BIN) "$(bindir)/$(VOLNTFY_BIN)"
+	install -Dm755 build/$(VOLNTFYD_BIN) "$(bindir)/$(VOLNTFYD_BIN)"
 	install -Dm644 common/config.skel "$(DATADIR)/config.skel"
 	# bash autocompletion
 	install -p -dm755 "$(BASH_COMPLETION_DIR)"
@@ -55,9 +60,9 @@ install:all
 	install -Dm644 build/$(VOLNTFYD_DESKTOP) "$(AUTOSTART_DIR)/$(VOLNTFYD_DESKTOP)"
 
 uninstall:
-	$(RM) -f "$(BINDIR)/$(VOLCTL_BIN)"
-	$(RM) -f "$(BINDIR)/$(VOLNTFY_BIN)"
-	$(RM) -f "$(BINDIR)/$(VOLNTFYD_BIN)"
+	$(RM) -f "$(bindir)/$(VOLCTL_BIN)"
+	$(RM) -f "$(bindir)/$(VOLNTFY_BIN)"
+	$(RM) -f "$(bindir)/$(VOLNTFYD_BIN)"
 	$(RM) -f "$(BASH_COMPLETION_DIR)/_volctl"
 	$(RM) -f "$(AUTOSTART_DIR)/$(VOLNTFYD_DESKTOP)"
 	$(RM) -rf "$(DATADIR)"
