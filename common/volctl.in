@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 APP_VERSION=@APP_VERSION@
+SCRIPT="${0}"
+SCRIPT_NAME="$(basename ${SCRIPT})"
+
 SKEL="@DATADIR@/config.skel"
 CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/volctl/config"
 
@@ -30,19 +33,27 @@ setup_color() {
     fi
 }
 
-USAGE_MSG="$(cat <<- EOF
-${YELLOW}Usage:${RESET} $(basename $0)  <command>
+ARGUMENTS="(--up | --down | --mute) [--help | --version]"
 
-volctl controls system volume
+show_help(){
+  cat <<- EOF
+	Usage: ${SCRIPT_NAME} ${ARGUMENTS}
 
-${YELLOW}Commands:${RESET}
-    ${GREEN}up${RESET}                  increase volume
-    ${GREEN}down${RESET}                decrease volume
-    ${GREEN}mute${RESET}                toggle mute
-    ${GREEN}--help${RESET}              show help message and exit
-    ${GREEN}--version${RESET}           show program's version number and exit
-EOF
-)"
+	volctl controls system volume
+
+	Options:
+	  up          increase volume
+	  down        decrease volume
+	  mute        toggle mute
+	  --help      show this help message and exit
+	  --version   show program's version number and exit
+	EOF
+}
+
+panic(){
+	echo "Usage: ${SCRIPT} ${ARGUMENTS}" >&2
+    exit $ERR_USAGE
+}
 
 is_int(){
     [[ "$1" =~ ^[0-9]+$ ]]
@@ -128,12 +139,11 @@ case "$operation" in
         ;;
 
     --help)
-        echo "${USAGE_MSG}"
+        show_help
         ;;
 
     *)
-        echo "${USAGE_MSG}" >&2
-        exit $ERR_USAGE
+        panic
         ;;
 
 esac
