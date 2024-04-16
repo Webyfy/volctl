@@ -87,21 +87,34 @@ check_prerequisites(){
     # TODO check if notification server exists
 }
 
-acquire_lock(){
-    exec 100>${CONFIG_DIR}/lock || {
+LOCKFILE="${CONFIG_DIR}/lock"
+LOCKFD=666
+
+prepare_locking(){
+    eval "exec ${LOCKFD}>\"${LOCKFILE}\"" || {
         echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} File descriptor redirect to lock file failed. Aborting." >&2
         exit 1; 
     }
+}
 
-    flock -x -n 100 || {
+acquire_lock(){
+    flock -x -n ${LOCKFD} || {
         echo -e "${RED}${BOLD}ERROR"'!!'"${RESET} Failed to acquire lock. Aborting." >&2
         exit 1; 
     }
 }
 
+release_lock(){
+    flock -u ${LOCKFD}
+}
+
 init(){
     check_prerequisites
+    
+    prepare_locking
+
     acquire_lock
+    trap release_lock EXIT
 }
 
 get_mute_state() {

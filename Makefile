@@ -34,31 +34,24 @@ build/$(VOLCTL_BIN): common/$(VOLCTL_BIN).in
 	$(Q)cp $< $@
 	$(Q)sed -i 's|@DATADIR@|'$(DATADIR)'|' $@
 	$(Q)sed -i 's|@APP_VERSION@|'$(VERSION)'|' $@
-	$(Q)chmod +x $@
-
 
 build/$(VOLNTFY_BIN): common/$(VOLNTFY_BIN).in
 	$(Q)mkdir -p build
 	$(Q)cp $< $@
 	$(Q)sed -i 's|DATADIR=""|DATADIR="'$(DATADIR)'"|' $@
 	$(Q)sed -i 's|@APP_VERSION@|'$(VERSION)'|' $@
-	$(Q)chmod +x $@
-
 
 build/$(VOLNTFYD_BIN): common/$(VOLNTFYD_BIN).in
 	$(Q)mkdir -p build
 	$(Q)cp $< $@
 	$(Q)sed -i 's|@APP_VERSION@|'$(VERSION)'|' $@
-	$(Q)chmod +x $@
 
 build/$(VOLNTFYD_DESKTOP): common/$(VOLNTFYD_DESKTOP)
 	$(Q)mkdir -p build
 	$(Q)sed -e 's|@BINDIR@|'$(bindir)'|' $<  >$@
 
 gen-man: build/$(VOLCTL_BIN) build/$(VOLNTFYD_BIN) build/$(VOLNTFY_BIN)
-	python3 -m help2man -o common/$(VOLCTL_BIN).1 build/$(VOLCTL_BIN)
-	python3 -m help2man -o common/$(VOLNTFYD_BIN).1 build/$(VOLNTFYD_BIN)
-	python3 -m help2man -o common/$(VOLNTFY_BIN).1 build/$(VOLNTFY_BIN) 
+	$(foreach f,$^,chmod +x $(f); python3 -m help2man -o common/$(shell basename $(f)).1 $(f);)
 
 clean:
 	$(RM) -f backup*.tgz
