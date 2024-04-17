@@ -82,11 +82,12 @@ uninstall:
 	$(RM) -f "$(MANPAGE_DIR)/$(VOLNTFY_BIN).1"
 	$(RM) -f "$(MANPAGE_DIR)/$(VOLNTFYD_BIN).1"
 
+# run as root user (or use sudo)
 deb: all
 	chmod 0644 doc-pak/*
 	checkinstall -D -y \
 	--install=no \
-	--fstrans=yes \
+	--fstrans=no \
 	--pkgname=$(PACKAGE_NAME) \
 	--pkgversion=$(VERSION) \
 	--pkgaltsource=https://gitlab.com/webyfy/iot/e-gurukul/volctl \
@@ -100,5 +101,7 @@ deb: all
 	--suggests="notification-daemon	\| notify-osd \| xfce4-notifyd \| dunst \| lxqt-notificationd \| mate-notification-daemon \| gnome-shell \| plasma-desktop \| plasma-nano" \
 	--reset-uids=yes \
 	--delspec=yes
+	make uninstall
+
 
 .PHONY: all clean uninstall deb
