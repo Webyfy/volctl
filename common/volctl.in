@@ -33,7 +33,7 @@ setup_color() {
     fi
 }
 
-ARGUMENTS="(--up | --down | --mute) [--help | --version]"
+ARGUMENTS="(--up | --down | --mute) [--help ] [--version]"
 
 show_help(){
   cat <<- EOF
@@ -50,7 +50,7 @@ show_help(){
 	EOF
 }
 
-panic(){
+usage_error(){
 	echo "Usage: ${SCRIPT} ${ARGUMENTS}" >&2
     exit $ERR_USAGE
 }
@@ -143,7 +143,7 @@ case "$operation" in
         ;;
 
     *)
-        panic
+        usage_error
         ;;
 
 esac

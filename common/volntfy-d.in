@@ -104,17 +104,11 @@ acquire_lock(){
     }
 }
 
-release_lock(){
-    flock -u ${LOCKFD}
-}
-
 init(){
     check_prerequisites
     
     prepare_locking
-
     acquire_lock
-    trap release_lock EXIT
 }
 
 get_mute_state() {

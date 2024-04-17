@@ -1,4 +1,4 @@
-VERSION := 0.99.9
+VERSION := 1.0.0
 PACKAGE_NAME := volctl
 
 VOLCTL_BIN := volctl
@@ -63,15 +63,13 @@ install: all
 	install -Dm755 build/$(VOLNTFYD_BIN) "$(bindir)/$(VOLNTFYD_BIN)"
 	install -Dm644 common/config.skel "$(DATADIR)/config.skel"
 	# bash autocompletion
-	install -p -dm755 "$(BASH_COMPLETION_DIR)"
 	install -Dm644 common/volctl_completion "$(BASH_COMPLETION_DIR)/_volctl"
 	# autostart
-	install -p -dm755 "$(AUTOSTART_DIR)"
 	install -Dm644 build/$(VOLNTFYD_DESKTOP) "$(AUTOSTART_DIR)/$(VOLNTFYD_DESKTOP)"
 	# man files
-	install -Dm644 build/$(VOLCTL_BIN).1 "$(MANPAGE_DIR)"
-	install -Dm644 build/$(VOLNTFY_BIN).1 "$(MANPAGE_DIR)"
-	install -Dm644 build/$(VOLNTFYD_BIN).1 "$(MANPAGE_DIR)"
+	install -Dm644 build/$(VOLCTL_BIN).1 "$(MANPAGE_DIR)/$(VOLCTL_BIN).1"
+	install -Dm644 build/$(VOLNTFY_BIN).1 "$(MANPAGE_DIR)/$(VOLNTFY_BIN).1"
+	install -Dm644 build/$(VOLNTFYD_BIN).1 "$(MANPAGE_DIR)/$(VOLNTFYD_BIN).1"
 
 uninstall:
 	$(RM) -f "$(bindir)/$(VOLCTL_BIN)"
@@ -91,13 +89,13 @@ deb: all
 	--fstrans=yes \
 	--pkgname=$(PACKAGE_NAME) \
 	--pkgversion=$(VERSION) \
-	--pkgaltsource=https://gitlab.com/webyfy/iot/e-gurukul/yade-mpv \
+	--pkgaltsource=https://gitlab.com/webyfy/iot/e-gurukul/volctl \
 	--pkgarch=all \
 	--pkgrelease=$$(date +"%Y%m%d") \
 	--pkglicense=GPL-3 \
 	--pkggroup=sound \
 	--pakdir=build \
-	--maintainer "Webyfy \<info@webyfy.com\>" \
+	--maintainer="Webyfy \<info@webyfy.com\>" \
 	--requires="bash, python3:any, pulseaudio-utils, coreutils, ncurses-bin, sound-theme-freedesktop, util-linux, python3-dbus" \
 	--suggests="notification-daemon	\| notify-osd \| xfce4-notifyd \| dunst \| lxqt-notificationd \| mate-notification-daemon \| gnome-shell \| plasma-desktop \| plasma-nano" \
 	--reset-uids=yes \
