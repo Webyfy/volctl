@@ -10,10 +10,10 @@ NOTIFICATION_APP_NAME = "volctl"
 DEFAULT_EXPIRATION_TIMEOUT = 2000
 
 ICONS = {
-    "muted": "audio-volume-muted",
-    "low": "audio-volume-low",
-    "medium": "audio-volume-medium",
-    "high": "audio-volume-high",
+    "muted": "audio-volume-muted-symbolic",
+    "low": "audio-volume-low-symbolic",
+    "medium": "audio-volume-medium-symbolic",
+    "high": "audio-volume-high-symbolic",
 }
 
 
