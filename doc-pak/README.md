@@ -54,7 +54,7 @@ A config file resides in `~/.config/volctl/config` and allows for some options:
 - **VOLUME_STEP_SIZE** - The percentage by which volume changes when using volctl (default is 5)
 
 ## Dependencies
-- **pulseaudio-utils** - provides `pactl` & `pacmd`
+- **pulseaudio-utils** - provides `pactl`
 - **coreutils** - provides `stdbuf`
 - **sound-theme-freedesktop** - provides `/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga`
 - **hicolor-icon-theme** (freedesktop default icon theme) - provides `audio-volume-*-symbolic`
